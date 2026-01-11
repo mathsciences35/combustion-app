@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Équilibrage de Réaction - Combustion</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            font-weight: 700;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+        }
+
+        .select-container {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .select-container label {
+            font-weight: 600;
+            color: #4a5568;
+            margin-right: 10px;
+            font-size: 16px;
+        }
+
+        select {
+            padding: 12px 20px;
+            font-size: 16px;
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            min-width: 220px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        select:hover {
+            border-color: #5568d3;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #5568d3;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .reaction-zone {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .box {
+            border: 3px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 30px;
+            min-height: 220px;
+            background: linear-gradient(to bottom, #f8f9fa, #ffffff);
+            flex: 1;
+            min-width: 280px;
+            max-width: 420px;
+            transition: all 0.3s;
+        }
+
+        .box:hover {
+            border-color: #cbd5e0;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        }
+
+        .box h3 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #667eea;
+            font-size: 1.3rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .molecules-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            justify-content: center;
+            align-items: center;
+            min-height: 120px;
+        }
+
+        .molecule {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 8px;
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 12px;
+            transition: transform 0.2s;
+        }
+
+        .molecule:hover {
+            transform: scale(1.05);
+        }
+
+        .atom {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2.5px solid #2d3748;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15), inset 0 1px 3px rgba(255,255,255,0.5);
+            transition: transform 0.2s;
+        }
+
+        .atom:hover {
+            transform: scale(1.1);
+        }
+
+        .carbon { 
+            background: radial-gradient(circle at 30% 30%, #333, #000);
+        }
+        
+        .hydrogen { 
+            background: radial-gradient(circle at 30% 30%, #fff, #e0e0e0);
+        }
+        
+        .oxygen { 
+            background: radial-gradient(circle at 30% 30%, #ff4444, #cc0000);
+        }
+
+        .arrow {
+            font-size: 56px;
+            color: #667eea;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 35px;
+            padding: 25px;
+            background: #f7fafc;
+            border-radius: 16px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            min-width: 180px;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        button {
+            padding: 10px 18px;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            transition: all 0.3s;
+            font-weight: bold;
+            min-width: 45px;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #5568d3, #6a3f8f);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .count-display {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2d3748;
+            min-width: 40px;
+            text-align: center;
+            padding: 8px 12px;
+            background: white;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .equation-container {
+            text-align: center;
+            padding: 25px;
+            border-radius: 16px;
+            font-size: clamp(1.1rem, 3vw, 1.6rem);
+            font-weight: 600;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+
+        .equation-balanced {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            border: 3px solid #28a745;
+            color: #155724;
+            animation: success 0.5s ease-out;
+        }
+
+        .equation-unbalanced {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            border: 3px solid #dc3545;
+            color: #721c24;
+        }
+
+        @keyframes success {
+            0% { transform: scale(0.95); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        .status-message {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 12px;
+            border-radius: 10px;
+        }
+
+        .status-balanced {
+            color: #155724;
+            background: #d4edda;
+        }
+
+        .status-unbalanced {
+            color: #721c24;
+            background: #f8d7da;
+        }
+
+        .plus-sign {
+            font-size: 26px;
+            font-weight: bold;
+            color: #4a5568;
+        }
+
+        .atom-count {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 25px;
+            padding: 20px;
+            background: #edf2f7;
+            border-radius: 12px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .atom-count-item {
+            text-align: center;
+            padding: 12px 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .atom-count-item strong {
+            display: block;
+            font-size: 0.9rem;
+            color: #718096;
+            margin-bottom: 5px;
+        }
+
+        .atom-count-item span {
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+
+        .count-match {
+            color: #28a745;
+        }
+
+        .count-mismatch {
+            color: #dc3545;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .box {
+                min-width: 100%;
+                padding: 20px;
+            }
+
+            .arrow {
+                font-size: 42px;
+                transform: rotate(90deg);
+                animation: none;
+            }
+
+            .atom {
+                width: 28px;
+                height: 28px;
+            }
+
+            button {
+                padding: 8px 14px;
+                font-size: 16px;
+                min-width: 40px;
+            }
+
+            .controls {
+                padding: 15px;
+            }
+
+            .control-group {
+                min-width: 140px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚗️ Combustion Complète des Hydrocarbures</h1>
+        <p class="subtitle">Apprenez à équilibrer les équations chimiques de combustion</p>
+        
+        <div class="select-container">
+            <label for="hydrocarbon">Choisir l'hydrocarbure :</label>
+            <select id="hydrocarbon">
+                <option value="methane">Méthane (CH₄)</option>
+                <option value="propane">Propane (C₃H₈)</option>
+                <option value="pentane">Pentane (C₅H₁₂)</option>
+                <option value="heptane">Heptane (C₇H₁₆)</option>
+                <option value="octane">Octane (C₈H₁₈)</option>
+            </select>
+        </div>
+
+        <div class="reaction-zone">
+            <div class="box">
+                <h3>Réactifs</h3>
+                <div class="molecules-container" id="reactifs"></div>
+            </div>
+            
+            <div class="arrow">→</div>
+            
+            <div class="box">
+                <h3>Produits</h3>
+                <div class="molecules-container" id="produits"></div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label>Hydrocarbure</label>
+                <div class="control-buttons">
+                    <button onclick="changeMolecule('hydrocarbon', -1)">−</button>
+                    <span class="count-display" id="count-hydrocarbon">1</span>
+                    <button onclick="changeMolecule('hydrocarbon', 1)">+</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Dioxygène (O₂)</label>
+                <div class="control-buttons">
+                    <button onclick="changeMolecule('oxygen', -1)">−</button>
+                    <span class="count-display" id="count-oxygen">1</span>
+                    <button onclick="changeMolecule('oxygen', 1)">+</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Dioxyde de carbone (CO₂)</label>
+                <div class="control-buttons">
+                    <button onclick="changeMolecule('co2', -1)">−</button>
+                    <span class="count-display" id="count-co2">1</span>
+                    <button onclick="changeMolecule('co2', 1)">+</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Eau (H₂O)</label>
+                <div class="control-buttons">
+                    <button onclick="changeMolecule('water', -1)">−</button>
+                    <span class="count-display" id="count-water">1</span>
+                    <button onclick="changeMolecule('water', 1)">+</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="equation-container" id="equation"></div>
+        <div class="status-message" id="status"></div>
+        
+        <div class="atom-count" id="atomCount"></div>
+    </div>
+
+    <script>
+        const hydrocarbons = {
+            methane: { C: 1, H: 4, name: 'CH₄' },
+            propane: { C: 3, H: 8, name: 'C₃H₈' },
+            pentane: { C: 5, H: 12, name: 'C₅H₁₂' },
+            heptane: { C: 7, H: 16, name: 'C₇H₁₆' },
+            octane: { C: 8, H: 18, name: 'C₈H₁₈' }
+        };
+
+        let currentHydrocarbon = 'methane';
+        let coefficients = {
+            hydrocarbon: 1,
+            oxygen: 1,
+            water: 1,
+            co2: 1
+        };
+
+        function createAtom(type) {
+            const atom = document.createElement('div');
+            atom.className = `atom ${type}`;
+            atom.title = type === 'carbon' ? 'Carbone (C)' : 
+                        type === 'hydrogen' ? 'Hydrogène (H)' : 'Oxygène (O)';
+            return atom;
+        }
+
+        function createMolecule(type) {
+            const molecule = document.createElement('div');
+            molecule.className = 'molecule';
+
+            if (type === 'hydrocarbon') {
+                const hc = hydrocarbons[currentHydrocarbon];
+                for (let i = 0; i < hc.C; i++) {
+                    molecule.appendChild(createAtom('carbon'));
+                }
+                for (let i = 0; i < hc.H; i++) {
+                    molecule.appendChild(createAtom('hydrogen'));
+                }
+            } else if (type === 'oxygen') {
+                molecule.appendChild(createAtom('oxygen'));
+                molecule.appendChild(createAtom('oxygen'));
+            } else if (type === 'water') {
+                molecule.appendChild(createAtom('hydrogen'));
+                molecule.appendChild(createAtom('oxygen'));
+                molecule.appendChild(createAtom('hydrogen'));
+            } else if (type === 'co2') {
+                molecule.appendChild(createAtom('oxygen'));
+                molecule.appendChild(createAtom('carbon'));
+                molecule.appendChild(createAtom('oxygen'));
+            }
+
+            return molecule;
+        }
+
+        function updateDisplay() {
+            const reactifs = document.getElementById('reactifs');
+            const produits = document.getElementById('produits');
+
+            reactifs.innerHTML = '';
+            produits.innerHTML = '';
+
+            for (let i = 0; i < coefficients.hydrocarbon; i++) {
+                reactifs.appendChild(createMolecule('hydrocarbon'));
+                if (i < coefficients.hydrocarbon - 1) {
+                    const plus = document.createElement('span');
+                    plus.className = 'plus-sign';
+                    plus.textContent = '+';
+                    reactifs.appendChild(plus);
+                }
+            }
+
+            if (coefficients.hydrocarbon > 0 && coefficients.oxygen > 0) {
+                const plusReactif = document.createElement('span');
+                plusReactif.className = 'plus-sign';
+                plusReactif.textContent = '+';
+                reactifs.appendChild(plusReactif);
+            }
+
+            for (let i = 0; i < coefficients.oxygen; i++) {
+                reactifs.appendChild(createMolecule('oxygen'));
+                if (i < coefficients.oxygen - 1) {
+                    const plus = document.createElement('span');
+                    plus.className = 'plus-sign';
+                    plus.textContent = '+';
+                    reactifs.appendChild(plus);
+                }
+            }
+
+            for (let i = 0; i < coefficients.co2; i++) {
+                produits.appendChild(createMolecule('co2'));
+                if (i < coefficients.co2 - 1) {
+                    const plus = document.createElement('span');
+                    plus.className = 'plus-sign';
+                    plus.textContent = '+';
+                    produits.appendChild(plus);
+                }
+            }
+
+            if (coefficients.co2 > 0 && coefficients.water > 0) {
+                const plusProduit = document.createElement('span');
+                plusProduit.className = 'plus-sign';
+                plusProduit.textContent = '+';
+                produits.appendChild(plusProduit);
+            }
+
+            for (let i = 0; i < coefficients.water; i++) {
+                produits.appendChild(createMolecule('water'));
+                if (i < coefficients.water - 1) {
+                    const plus = document.createElement('span');
+                    plus.className = 'plus-sign';
+                    plus.textContent = '+';
+                    produits.appendChild(plus);
+                }
+            }
+
+            updateEquation();
+        }
+
+        function updateEquation() {
+            const hc = hydrocarbons[currentHydrocarbon];
+            const equation = document.getElementById('equation');
+            const status = document.getElementById('status');
+            const atomCount = document.getElementById('atomCount');
+
+            const coefHC = coefficients.hydrocarbon > 1 ? coefficients.hydrocarbon : '';
+            const coefO2 = coefficients.oxygen > 1 ? coefficients.oxygen : '';
+            const coefCO2 = coefficients.co2 > 1 ? coefficients.co2 : '';
+            const coefH2O = coefficients.water > 1 ? coefficients.water : '';
+
+            const eqText = `${coefHC}${hc.name} + ${coefO2}O₂ → ${coefCO2}CO₂ + ${coefH2O}H₂O`;
+
+            const totalC_reactifs = coefficients.hydrocarbon * hc.C;
+            const totalH_reactifs = coefficients.hydrocarbon * hc.H;
+            const totalO_reactifs = coefficients.oxygen * 2;
+
+            const totalC_produits = coefficients.co2;
+            const totalH_produits = coefficients.water * 2;
+            const totalO_produits = coefficients.co2 * 2 + coefficients.water;
+
+            const isBalanced = (totalC_reactifs === totalC_produits) && 
+                             (totalH_reactifs === totalH_produits) && 
+                             (totalO_reactifs === totalO_produits);
+
+            equation.textContent = eqText;
+            equation.className = isBalanced ? 'equation-container equation-balanced' : 'equation-container equation-unbalanced';
+
+            if (isBalanced) {
+                status.textContent = '✓ Équation équilibrée ! Bravo !';
+                status.className = 'status-message status-balanced';
+            } else {
+                status.textContent = '✗ L\'équation n\'est pas encore équilibrée';
+                status.className = 'status-message status-unbalanced';
+            }
+
+            atomCount.innerHTML = `
+                <div class="atom-count-item">
+                    <strong>Carbone (C)</strong>
+                    <span class="${totalC_reactifs === totalC_produits ? 'count-match' : 'count-mismatch'}">
+                        ${totalC_reactifs} → ${totalC_produits}
+                    </span>
+                </div>
+                <div class="atom-count-item">
+                    <strong>Hydrogène (H)</strong>
+                    <span class="${totalH_reactifs === totalH_produits ? 'count-match' : 'count-mismatch'}">
+                        ${totalH_reactifs} → ${totalH_produits}
+                    </span>
+                </div>
+                <div class="atom-count-item">
+                    <strong>Oxygène (O)</strong>
+                    <span class="${totalO_reactifs === totalO_produits ? 'count-match' : 'count-mismatch'}">
+                        ${totalO_reactifs} → ${totalO_produits}
+                    </span>
+                </div>
+            `;
+        }
+
+        function changeMolecule(type, delta) {
+            coefficients[type] = Math.max(0, coefficients[type] + delta);
+            document.getElementById(`count-${type}`).textContent = coefficients[type];
+            updateDisplay();
+        }
+
+        document.getElementById('hydrocarbon').addEventListener('change', function(e) {
+            currentHydrocarbon = e.target.value;
+            updateDisplay();
+        });
+
+        updateDisplay();
+    </script>
+</body>
+</html>
